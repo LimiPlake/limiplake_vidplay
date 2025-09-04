@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LimiPlake Video Player</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+    }
+    /* Sticky top bar */
+    #topBar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      background: #f8f8f8;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+    /* Dissolve animation for snacks */
+    @keyframes dissolve {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .dissolve { animation: dissolve 0.8s ease; }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topBar">
+
+  <!-- Gradient YouTube logo -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="34" viewBox="0 0 100 70">
+    <defs>
+      <linearGradient id="ytGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ff0000"/>
+        <stop offset="50%" stop-color="#00ff00"/>
+        <stop offset="100%" stop-color="#0000ff"/>
+      </linearGradient>
+    </defs>
+    <path fill="url(#ytGradient)" d="M98.2 15.6c-1.1-4.3-4.5-7.7-8.8-8.8C82 5 50 5 50 5s-32 0-39.4 1.8c-4.3 1.1-7.7 4.5-8.8 8.8C0 23 0 35 0 35s0 12 1.8 19.4c1.1 4.3 4.5 7.7 8.8 8.8C18 65 50 65 50 65s32 0 39.4-1.8c4.3-1.1 7.7-4.5 8.8-8.8C100 47 100 35 100 35s0-12-1.8-19.4z"/>
+    <polygon fill="#fff" points="40,23 70,35 40,47"/>
+  </svg>
+
+  <!-- Heading -->
+  <h2 style="margin:0; font-size:20px;">LimiPlake Video Player</h2>
+
+  <!-- Mode slider -->
+  <div style="text-align:center;">
+    <div style="display:flex; justify-content:space-between; margin:0 8px 2px 8px; font-weight:bold;">
+      <span>1</span><span>2</span><span>3</span>
+    </div>
+    <input type="range" id="modeSlider" min="1" max="3" step="1" value="2" style="width:120px">
+    <p style="margin:4px 0; font-size:12px; line-height:1.3em;">
+      1: Screen recording<br>
+      2: Default mode<br>
+      3: Face mode
+    </p>
+  </div>
+
+  <!-- Snacks -->
+  <label>
+    🍿
+    <select id="snackMenu">
+      <option value="">--</option>
+      <option>🍿</option>
+      <option>🍫</option>
+      <option>🥤</option>
+      <option>🍎</option>
+      <option>🥨</option>
+      <option>🎂</option>
+      <option>🍊</option>
+      <option>🍉</option>
+    </select>
+  </label>
+
+  <!-- Chapters -->
+  <label>
+    ⏩
+    <select id="chapterMenu">
+      <option value="">--</option>
+    </select>
+  </label>
+
+  <!-- Teacher Connect -->
+  <label>
+    👩‍🏫 Hostname:
+    <input id="hostName" type="text" placeholder="e.g. Ms A Room3" style="width:120px">
+  </label>
+  <button id="hostGo">Go Live</button>
+  <button id="studentConnect">Teacher Connect</button>
+
+  <!-- Teacher global controls -->
+  <button id="tPlayAll">▶ Everyone</button>
+  <button id="tPauseAll">⏸ Everyone</button>
+  <label>
+    Jump All (s):
+    <input id="tJumpAllSec" type="text" style="width:60px">
+  </label>
+  <button id="tJumpAllGo">Go</button>
+
+</div>
+
+<!-- Video area placeholder -->
+<div style="padding:20px;">
+  <p>🎥 Video player goes here...</p>
+  <div id="modeLabel" style="font-weight:bold;">Default mode</div>
+</div>
+
+<script>
+// === Snacks ===
+const snackMenu = document.getElementById('snackMenu');
+const snackOriginals = Array.from(snackMenu.options).map(o => o.textContent);
+
+snackMenu.addEventListener('change', ()=>{
+  const idx = snackMenu.selectedIndex;
+  if (idx > 0) {
+    snackMenu.options[idx].textContent = "😋";
+    setTimeout(()=>{
+      const opt = snackMenu.options[idx];
+      opt.classList.add('dissolve');
+      opt.textContent = snackOriginals[idx];
+      setTimeout(()=> opt.classList.remove('dissolve'), 800);
+    }, 3000);
+  }
+});
+
+// === Chapters ===
+const CHAPTERS = [
+  { t:0, label:"Intro" },
+  { t:75, label:"Big Idea" },
+  { t:420, label:"Demo" },
+  { t:760, label:"Wrap-up" }
+];
+const chapterMenu = document.getElementById('chapterMenu');
+CHAPTERS.forEach(ch=>{
+  const opt=document.createElement('option');
+  opt.value=ch.t;
+  opt.textContent=`${fmt(ch.t)} — ${ch.label}`;
+  chapterMenu.appendChild(opt);
+});
+chapterMenu.addEventListener('change', ()=>{
+  const sec = parseInt(chapterMenu.value,10);
+  if(!isNaN(sec)){
+    // getActive() would normally control YouTube iframe
+    console.log("Jump to",sec,"seconds");
+    document.getElementById('modeLabel').textContent = `Jumped to ${fmt(sec)}`;
+  }
+});
+function fmt(s){ const m=Math.floor(s/60), ss=String(Math.floor(s%60)).padStart(2,'0'); return `${m}:${ss}`; }
+
+// === Mode slider ===
+const modeSlider=document.getElementById('modeSlider');
+const modeLabel=document.getElementById('modeLabel');
+function switchMode(mode){
+  modeLabel.textContent = mode==="screen"?"Screen recording": mode==="face"?"Face mode":"Default mode";
+}
+modeSlider.addEventListener('input', ()=>{
+  const v=parseInt(modeSlider.value,10);
+  if(v===1) switchMode('screen');
+  if(v===2) switchMode('default');
+  if(v===3) switchMode('face');
+});
+
+// === Teacher broadcast stubs ===
+function teacherBroadcast(type, time=null){
+  console.log("Teacher broadcast:",type,time);
+}
+document.getElementById('tPlayAll').onclick = ()=> teacherBroadcast('play');
+document.getElementById('tPauseAll').onclick= ()=> teacherBroadcast('pause');
+document.getElementById('tJumpAllGo').onclick= ()=>{
+  const v=parseFloat(document.getElementById('tJumpAllSec').value);
+  if(!isNaN(v)) teacherBroadcast('seek',v);
+};
+</script>
+
+</body>
+</html>
