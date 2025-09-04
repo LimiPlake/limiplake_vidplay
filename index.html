@@ -14,7 +14,7 @@
       top: 0;
       z-index: 1000;
       padding: 10px;
-      border-bottom: 1px solid #ccc; 
+      border-bottom: 1px solid #ccc;
       background: #f8f8f8;
       display: flex;
       flex-wrap: wrap;
@@ -66,7 +66,7 @@
 
   <!-- Snacks -->
   <label>
-    Snacks ▼
+    🍿
     <select id="snackMenu">
       <option value="">--</option>
       <option>🍿</option>
@@ -82,7 +82,7 @@
 
   <!-- Chapters -->
   <label>
-    Chapters ▼
+    ⏩
     <select id="chapterMenu">
       <option value="">--</option>
     </select>
@@ -107,17 +107,18 @@
 
 </div>
 
-<!-- Video area placeholder -->
+<!-- Video player -->
 <div style="padding:20px;">
-  <p>🎥 YouTube IFrame player goes here...</p>
-  <div id="modeLabel" style="font-weight:bold;">Default mode</div>
+  <div id="player"></div>
+  <div id="modeLabel" style="font-weight:bold; margin-top:10px;">Default mode</div>
 </div>
 
 <script>
 // === URL parsing ===
 function parseUrlConfig(){
   const pathParts = window.location.pathname.split('/').filter(Boolean);
-  const mainId = pathParts[0] || null;
+  // 👇 Default video if no ID in URL
+  const mainId = pathParts[0] || "A0ts5uWGkLM"; // Default video ID (for 652 errors)
   const q = new URLSearchParams(window.location.search);
   const faceId = q.get('face') || null;
   const screenId = q.get('scrrec') || null;
@@ -182,8 +183,7 @@ function fillChapterMenu(chapters) {
   chapterMenu.addEventListener('change', ()=>{
     const sec = parseInt(chapterMenu.value, 10);
     if (!isNaN(sec)) {
-      console.log("Jump to", sec, "seconds");
-      document.getElementById('modeLabel').textContent = `Jumped to ${fmt(sec)}`;
+      if (player) player.seekTo(sec, true);
     }
   });
 }
@@ -216,7 +216,22 @@ document.getElementById('tJumpAllGo').onclick= ()=>{
   const v=parseFloat(document.getElementById('tJumpAllSec').value);
   if(!isNaN(v)) teacherBroadcast('seek', v);
 };
+
+// === YouTube IFrame API ===
+let player;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    videoId: cfg.mainId,
+    width: '640',
+    height: '360',
+    playerVars: { rel:0, modestbranding:1 }
+  });
+}
+function getActive(){ return player; }
 </script>
+
+<!-- Load YouTube IFrame API -->
+<script src="https://www.youtube.com/iframe_api"></script>
 
 </body>
 </html>
