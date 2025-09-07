@@ -4,3 +4,4 @@ The LimiPlake Video Player is where you can any videos - and you can also connec
 Thank you for using the LimiPlake Video Player 😃!
 > [!NOTE]
 > If you find a bug, please help us by reporting it to our buglist - emailing the bug to anhad@limiplake.com 🪲❌
+ 
